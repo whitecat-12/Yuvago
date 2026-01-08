@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulasi Sensor HC-SR04 dengan Arduino</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.5;
+            padding: 10px;
+            font-size: 14px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 18px 15px;
+            border-bottom: 4px solid #3498db;
+        }
+        
+        h1 {
+            font-size: 18px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 300;
+            line-height: 1.3;
+        }
+        
+        .content {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .panel {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eaeaea;
+        }
+        
+        .panel-title {
+            font-size: 15px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .panel-title i {
+            margin-right: 8px;
+            color: #3498db;
+        }
+        
+        .title-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .title-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            transition: all 0.2s ease;
+        }
+        
+        .title-btn:hover, .title-btn:active {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        .title-btn.table {
+            background: #4CAF50;
+        }
+        
+        .title-btn.table:hover, .title-btn.table:active {
+            background: #388E3C;
+        }
+        
+        .slider-container {
+            margin-bottom: 18px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .slider-value {
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+        
+        button {
+            padding: 10px 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1;
+            min-width: calc(33.333% - 6px);
+            font-size: 12px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:active {
+            background-color: #2980b9;
+            transform: translateY(1px);
+        }
+        
+        .btn-secondary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-secondary:active {
+            background-color: #388E3C;
+            transform: translateY(1px);
+        }
+        
+        .btn-download {
+            background-color: #607D8B;
+            color: white;
+        }
+        
+        .btn-download:active {
+            background-color: #455A64;
+            transform: translateY(1px);
+        }
+        
+        .current-reading {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .distance-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        
+        .unit {
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .pulse-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .pulse-info span {
+            background: #f8f9fa;
+            padding: 3px 6px;
+            border-radius: 3px;
+            flex: 1;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .chart-container {
+            margin-top: 10px;
+            height: 220px;
+            width: 100%;
+            position: relative;
+        }
+        
+        .chart-title {
+            font-size: 13px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 12px;
+            margin-top: 12px;
+            color: #6c757d;
+            font-size: 11px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .note {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 11px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .note strong {
+            color: #495057;
+        }
+        
+        .data-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 11px;
+            background: white;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            padding: 10px 8px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            font-size: 11px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .data-table td {
+            padding: 9px 8px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .current-row {
+            background-color: #e9ecef !important;
+            font-weight: 600;
+        }
+        
+        .status-normal {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-warning {
+            color: #fd7e14;
+            font-weight: 600;
+        }
+        
+        .status-error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            body {
+                padding: 15px;
+                font-size: 15px;
+            }
+            
+            header {
+                padding: 22px 20px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .content {
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .panel {
+                padding: 18px;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            button {
+                padding: 11px 14px;
+                font-size: 13px;
+                min-width: calc(33.333% - 8px);
+            }
+            
+            .distance-value {
+                font-size: 28px;
+            }
+            
+            .title-btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+        }
+        
+        /* Landscape mode adjustments */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .chart-container {
+                height: 180px;
+            }
+            
+            .current-reading {
+                padding: 10px;
+            }
+            
+            .distance-value {
+                font-size: 22px;
+            }
+            
+            .data-container {
+                max-height: 150px;
+            }
+        }
+        
+        /* Scrollbar styling */
+        .data-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .data-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .data-container::-webkit-scrollbar-thumb {
+            background: #adb5bd;
+            border-radius: 3px;
+        }
+        
+        .data-container::-webkit-scrollbar-thumb:hover {
+            background: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kontroller Sensor HC-SR04 dengan Arduino</h1>
+            <p class="subtitle">Visualisasi pengukuran jarak 2-100 cm dengan gelombang ultrasound 40kHz</p>
+        </header>
+        
+        <div class="content">
+            <div class="panel">
+                <h2 class="panel-title">Kontroller Sensor</h2>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Jarak Objek:</span>
+                        <span class="slider-value" id="distanceValue">100 cm</span>
+                    </div>
+                    <input type="range" id="distanceSlider" min="2" max="100" value="100" step="1">
+                    <div class="slider-label">
+                        <span>2 cm</span>
+                        <span>100 cm</span>
+                    </div>
+                </div>
+                
+                <div class="current-reading">
+                    <div>Jarak Terukur:</div>
+                    <div class="distance-value" id="currentDistance">100.0</div>
+                    <div class="unit">centimeter</div>
+                    <div class="pulse-info">
+                        <span>Waktu: <span id="pulseTime">5.83</span> ms</span>
+                        <span>Frekuensi: 40 kHz</span>
+                        <span>Panjang gelombang: <span id="wavelengthValue">8.6</span> mm</span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="simulateBtn" class="btn-primary">
+                        Mulai Pembacaan
+                    </button>
+                    <button id="randomBtn" class="btn-secondary">
+                        Data Acak
+                    </button>
+                    <button id="downloadAllBtn" class="btn-download">
+                        Unduh Semua
+                    </button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 class="panel-title">
+                    <span>Data Pengukuran HC-SR04</span>
+                    <div class="title-buttons">
+                        <button class="title-btn table" id="downloadTableBtn" title="Unduh tabel sebagai PNG">
+                            Unduh Tabel
+                        </button>
+                    </div>
+                </h2>
+                
+                <div class="data-container" id="tableContainer">
+                    <table class="data-table" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Jarak (cm)</th>
+                                <th>Waktu Tempuh (ms)</th>
+                                <th>Status Pengukuran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Data akan diisi oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="note">
+                    <strong>Informasi:</strong> Sensor HC-SR04 memiliki rentang pengukuran 2-400cm dengan akurasi ±3mm. 
+                    Data di atas adalah hasil simulasi pengukuran jarak menggunakan gelombang ultrasound 40kHz.
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 class="panel-title">
+                    <span>Visualisasi Gelombang Ultrasound</span>
+                    <div class="title-buttons">
+                        <button class="title-btn" id="downloadChartBtn" title="Unduh grafik sebagai PNG">
+                            Unduh Grafik
+                        </button>
+                    </div>
+                </h2>
+                
+                <div class="chart-title" id="chartTitle">Gelombang Ultrasound 40kHz (25μs) - Jarak Objek: 100 cm</div>
+                
+                <div class="chart-container">
+                    <canvas id="waveChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Kontroller Sensor HC-SR04 dengan Arduino © 2023 | Dibuat untuk tujuan edukasi dan pembelajaran</p>
+        </footer>
+    </div>
+
+    <script>
+        // Inisialisasi variabel
+        let currentDistance = 100;
+        let soundSpeed = 343; // Kecepatan suara dalam m/s
+        let isSimulating = false;
+        let simulationInterval;
+        let chart;
+        
+        // Elemen DOM
+        const distanceSlider = document.getElementById('distanceSlider');
+        const distanceValue = document.getElementById('distanceValue');
+        const currentDistanceElement = document.getElementById('currentDistance');
+        const pulseTimeElement = document.getElementById('pulseTime');
+        const wavelengthElement = document.getElementById('wavelengthValue');
+        const dataTableBody = document.getElementById('dataTableBody');
+        const simulateBtn = document.getElementById('simulateBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const downloadChartBtn = document.getElementById('downloadChartBtn');
+        const downloadTableBtn = document.getElementById('downloadTableBtn');
+        const chartTitle = document.getElementById('chartTitle');
+        const tableContainer = document.getElementById('tableContainer');
+        
+        // Data untuk tabel
+        let measurementData = [];
+        
+        // Inisialisasi data
+        function initializeData() {
+            measurementData = [];
+            for (let i = 0; i < 8; i++) {
+                const distance = 100 - i * 12;
+                const pulseTime = calculatePulseTime(distance);
+                const status = getStatus(distance);
+                measurementData.push({
+                    id: i + 1,
+                    distance: distance,
+                    pulseTime: pulseTime,
+                    status: status.text,
+                    statusClass: status.class
+                });
+            }
+            updateDataTable();
+        }
+        
+        // Hitung waktu tempuh pulsa
+        function calculatePulseTime(distanceCm) {
+            const distanceM = distanceCm / 100;
+            const time = (2 * distanceM) / soundSpeed;
+            return (time * 1000).toFixed(2);
+        }
+        
+        // Hitung panjang gelombang
+        function calculateWavelength() {
+            const frequency = 40000; // 40 kHz
+            return (soundSpeed / frequency * 1000).toFixed(1); // dalam mm
+        }
+        
+        // Dapatkan status berdasarkan jarak
+        function getStatus(distance) {
+            if (distance < 5) {
+                return { text: "Terlalu Dekat", class: "status-error" };
+            } else if (distance > 400) {
+                return { text: "Terlalu Jauh", class: "status-error" };
+            } else if (distance < 20) {
+                return { text: "Rentan Error", class: "status-warning" };
+            } else {
+                return { text: "Normal", class: "status-normal" };
+            }
+        }
+        
+        // Update tampilan
+        function updateSliderValues() {
+            currentDistance = parseInt(distanceSlider.value);
+            distanceValue.textContent = `${currentDistance} cm`;
+            
+            const pulseTime = calculatePulseTime(currentDistance);
+            const wavelength = calculateWavelength();
+            
+            currentDistanceElement.textContent = currentDistance.toFixed(1);
+            pulseTimeElement.textContent = pulseTime;
+            wavelengthElement.textContent = wavelength;
+        }
+        
+        // Update tabel data
+        function updateDataTable() {
+            dataTableBody.innerHTML = '';
+            
+            measurementData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                if (Math.abs(item.distance - currentDistance) < 1) {
+                    row.classList.add('current-row');
+                }
+                
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td><strong>${item.distance.toFixed(1)}</strong></td>
+                    <td>${item.pulseTime}</td>
+                    <td><span class="${item.statusClass}">${item.status}</span></td>
+                `;
+                
+                dataTableBody.appendChild(row);
+            });
+        }
+        
+        // Generate data acak
+        function generateRandomData() {
+            measurementData = [];
+            
+            for (let i = 0; i < 8; i++) {
+                const distance = Math.floor(Math.random() * 98) + 2;
+                const pulseTime = calculatePulseTime(distance);
+                const status = getStatus(distance);
+                measurementData.push({
+                    id: i + 1,
+                    distance: distance,
+                    pulseTime: pulseTime,
+                    status: status.text,
+                    statusClass: status.class
+                });
+            }
+            
+            measurementData.sort((a, b) => b.distance - a.distance);
+            measurementData.forEach((item, index) => { item.id = index + 1; });
+            
+            updateDataTable();
+            
+            if (measurementData.length > 0) {
+                const randomDistance = measurementData[0].distance;
+                distanceSlider.value = randomDistance;
+                updateSliderValues();
+                updateChart();
+            }
+        }
+        
+        // Generate data untuk SATU panjang gelombang (25μs pada 40kHz)
+        function generateSingleWavelengthData() {
+            const frequency = 40000; // 40 kHz
+            const period = 1 / frequency * 1000000; // 25μs
+            const points = 100; // Jumlah titik untuk satu gelombang
+            
+            const labels = [];
+            const transmission = [];
+            const echo = [];
+            
+            // Untuk jarak saat ini, hitung fase delay untuk echo
+            const pulseTimeMicro = parseFloat(calculatePulseTime(currentDistance)) * 1000;
+            const phaseShift = (pulseTimeMicro % period) / period * 2 * Math.PI;
+            
+            // Generate satu panjang gelombang lengkap
+            for (let i = 0; i <= points; i++) {
+                const time = i * period / points;
+                labels.push(time.toFixed(1));
+                
+                // Gelombang transmisi
+                const wave = Math.sin(2 * Math.PI * time / period);
+                transmission.push(wave);
+                
+                // Gelombang echo dengan phase shift dan attenuasi
+                const attenuation = Math.max(0.3, 1 - (currentDistance / 300));
+                const echoWave = Math.sin(2 * Math.PI * time / period + phaseShift) * attenuation;
+                echo.push(echoWave);
+            }
+            
+            return { labels, transmission, echo, period };
+        }
+        
+        // Inisialisasi grafik
+        function initializeChart() {
+            const ctx = document.getElementById('waveChart').getContext('2d');
+            
+            const waveData = generateSingleWavelengthData();
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: waveData.labels,
+                    datasets: [
+                        {
+                            label: 'Gelombang Transmisi',
+                            data: waveData.transmission,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.05)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Gelombang Echo (Pantulan)',
+                            data: waveData.echo,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.05)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10,
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 11
+                                },
+                                color: '#495057'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#495057',
+                            bodyColor: '#495057',
+                            borderColor: '#dee2e6',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Waktu (μs)',
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 11,
+                                    weight: 'bold'
+                                },
+                                color: '#495057'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                maxTicksLimit: 6,
+                                font: {
+                                    size: window.innerWidth < 768 ? 8 : 9
+                                },
+                                color: '#6c757d'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Amplitudo',
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 11,
+                                    weight: 'bold'
+                                },
+                                color: '#495057'
+                            },
+                            min: -1.1,
+                            max: 1.1,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: window.innerWidth < 768 ? 8 : 9
+                                },
+                                color: '#6c757d',
+                                stepSize: 0.5
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 300,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Update grafik
+        function updateChart() {
+            const waveData = generateSingleWavelengthData();
+            
+            chart.data.labels = waveData.labels;
+            chart.data.datasets[0].data = waveData.transmission;
+            chart.data.datasets[1].data = waveData.echo;
+            
+            // Update judul grafik
+            chartTitle.textContent = `Gelombang Ultrasound 40kHz (${waveData.period}μs) - Jarak Objek: ${currentDistance} cm`;
+            
+            chart.update();
+        }
+        
+        // Simulasi perubahan jarak
+        function startSimulation() {
+            if (isSimulating) {
+                clearInterval(simulationInterval);
+                simulateBtn.innerHTML = 'Mulai Simulasi';
+                simulateBtn.classList.remove('btn-secondary');
+                simulateBtn.classList.add('btn-primary');
+                isSimulating = false;
+                return;
+            }
+            
+            isSimulating = true;
+            simulateBtn.innerHTML = 'Hentikan Simulasi';
+            simulateBtn.classList.remove('btn-primary');
+            simulateBtn.classList.add('btn-secondary');
+            
+            let direction = -1;
+            let simDistance = currentDistance;
+            
+            simulationInterval = setInterval(() => {
+                if (simDistance <= 2) direction = 1;
+                if (simDistance >= 100) direction = -1;
+                
+                simDistance += direction * 3;
+                
+                distanceSlider.value = simDistance;
+                updateSliderValues();
+                
+                const pulseTime = calculatePulseTime(simDistance);
+                const status = getStatus(simDistance);
+                
+                measurementData.unshift({
+                    id: measurementData.length + 1,
+                    distance: simDistance,
+                    pulseTime: pulseTime,
+                    status: status.text,
+                    statusClass: status.class
+                });
+                
+                if (measurementData.length > 8) measurementData.pop();
+                measurementData.forEach((item, index) => { item.id = index + 1; });
+                
+                updateDataTable();
+                updateChart();
+            }, 600);
+        }
+        
+        // Download grafik
+        function downloadChart() {
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
+            link.download = `HC-SR04_Grafik_${currentDistance}cm_${timestamp}.png`;
+            link.href = chart.toBase64Image();
+            link.click();
+            
+            // Feedback visual
+            showFeedback(downloadChartBtn, '✓ Terunduh');
+        }
+        
+        // Download tabel sebagai PNG dengan desain formal
+        function downloadTable() {
+            // Sembunyikan scrollbar sementara
+            const originalOverflow = tableContainer.style.overflow;
+            tableContainer.style.overflow = 'hidden';
+            
+            // Buat elemen sementara untuk rendering tabel formal
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '-9999px';
+            tempContainer.style.width = '800px'; // Lebar untuk format landscape
+            tempContainer.style.backgroundColor = '#ffffff';
+            tempContainer.style.padding = '30px';
+            tempContainer.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            
+            // Header formal
+            const header = document.createElement('div');
+            header.innerHTML = `
+                <div style="margin-bottom: 25px; border-bottom: 2px solid #343a40; padding-bottom: 15px;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #343a40; text-align: center;">
+                        DATA PENGUKURAN SENSOR HC-SR04
+                    </h1>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #6c757d; text-align: center;">
+                        Simulasi Pengukuran Jarak dengan Gelombang Ultrasound 40kHz
+                    </p>
+                </div>
+            `;
+            
+            // Informasi parameter
+            const parameterInfo = document.createElement('div');
+            parameterInfo.innerHTML = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px; width: 33%; border-right: 1px solid #dee2e6;">
+                                <div style="font-size: 12px; color: #6c757d; margin-bottom: 3px;">Jarak Objek Saat Ini</div>
+                                <div style="font-size: 18px; font-weight: 700; color: #343a40;">${currentDistance.toFixed(1)} cm</div>
+                            </td>
+                            <td style="padding: 8px; width: 33%; border-right: 1px solid #dee2e6;">
+                                <div style="font-size: 12px; color: #6c757d; margin-bottom: 3px;">Waktu Tempuh</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #343a40;">${calculatePulseTime(currentDistance)} ms</div>
+                            </td>
+                            <td style="padding: 8px; width: 34%;">
+                                <div style="font-size: 12px; color: #6c757d; margin-bottom: 3px;">Kecepatan Suara</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #343a40;">${soundSpeed} m/s</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div style="margin-bottom: 25px; font-size: 12px; color: #6c757d;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px; text-align: center; border-right: 1px solid #dee2e6;">
+                                <strong>Frekuensi:</strong> 40 kHz
+                            </td>
+                            <td style="padding: 5px; text-align: center; border-right: 1px solid #dee2e6;">
+                                <strong>Panjang Gelombang:</strong> ${calculateWavelength()} mm
+                            </td>
+                            <td style="padding: 5px; text-align: center;">
+                                <strong>Rentang Sensor:</strong> 2-400 cm
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            
+            // Clone tabel dengan styling formal
+            const clonedTable = document.getElementById('dataTable').cloneNode(true);
+            
+            // Style formal untuk tabel
+            clonedTable.style.width = '100%';
+            clonedTable.style.borderCollapse = 'collapse';
+            clonedTable.style.fontSize = '13px';
+            clonedTable.style.marginBottom = '20px';
+            clonedTable.style.border = '1px solid #dee2e6';
+            
+            // Style header tabel
+            const thElements = clonedTable.querySelectorAll('th');
+            thElements.forEach(th => {
+                th.style.backgroundColor = '#f8f9fa';
+                th.style.color = '#343a40';
+                th.style.padding = '12px 10px';
+                th.style.border = '1px solid #dee2e6';
+                th.style.fontWeight = '600';
+                th.style.fontSize = '13px';
+                th.style.textAlign = 'center';
+            });
+            
+            // Style baris tabel
+            const trElements = clonedTable.querySelectorAll('tr');
+            trElements.forEach((tr, index) => {
+                if (index > 0) { // Skip header
+                    const tds = tr.querySelectorAll('td');
+                    tds.forEach(td => {
+                        td.style.padding = '10px';
+                        td.style.border = '1px solid #dee2e6';
+                        td.style.textAlign = 'center';
+                    });
+                    
+                    // Highlight baris dengan jarak saat ini
+                    const distanceCell = tr.cells[1];
+                    if (distanceCell && Math.abs(parseFloat(distanceCell.textContent) - currentDistance) < 1) {
+                        tr.style.backgroundColor = '#f8f9fa';
+                        tds.forEach(td => {
+                            td.style.fontWeight = '600';
+                        });
+                    }
+                    
+                    // Zebra striping
+                    if (index % 2 === 0) {
+                        tr.style.backgroundColor = '#ffffff';
+                    } else {
+                        tr.style.backgroundColor = '#f8f9fa';
+                    }
+                    
+                    // Style untuk status tanpa background berwarna
+                    const statusCell = tr.cells[3];
+                    if (statusCell) {
+                        const statusText = statusCell.textContent.trim();
+                        if (statusText === "Normal") {
+                            statusCell.innerHTML = `<span style="color: #28a745; font-weight: 600;">${statusText}</span>`;
+                        } else if (statusText === "Rentan Error") {
+                            statusCell.innerHTML = `<span style="color: #fd7e14; font-weight: 600;">${statusText}</span>`;
+                        } else {
+                            statusCell.innerHTML = `<span style="color: #dc3545; font-weight: 600;">${statusText}</span>`;
+                        }
+                    }
+                }
+            });
+            
+            // Footer dengan timestamp
+            const footer = document.createElement('div');
+            const now = new Date();
+            footer.innerHTML = `
+                <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; color: #6c757d;">
+                        <tr>
+                            <td style="padding: 5px; width: 50%;">
+                                <strong>Dibuat:</strong> ${now.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })} ${now.toLocaleTimeString('id-ID')}
+                            </td>
+                            <td style="padding: 5px; width: 50%; text-align: right;">
+                                Simulasi Sensor HC-SR04 dengan Arduino - Untuk Tujuan Edukasi
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            
+            // Tambahkan semua elemen ke container
+            tempContainer.appendChild(header);
+            tempContainer.appendChild(parameterInfo);
+            tempContainer.appendChild(clonedTable);
+            tempContainer.appendChild(footer);
+            
+            document.body.appendChild(tempContainer);
+            
+            // Konversi ke PNG dengan resolusi tinggi
+            html2canvas(tempContainer, {
+                scale: 2, // Resolusi tinggi
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                logging: false,
+                allowTaint: true
+            }).then(canvas => {
+                // Buat link download
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
+                link.download = `Data_HC-SR04_${currentDistance}cm_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                
+                // Hapus elemen sementara
+                document.body.removeChild(tempContainer);
+                
+                // Kembalikan overflow
+                tableContainer.style.overflow = originalOverflow;
+                
+                // Feedback visual
+                showFeedback(downloadTableBtn, '✓ Tabel Terunduh');
+            }).catch(error => {
+                console.error('Error generating table PNG:', error);
+                document.body.removeChild(tempContainer);
+                tableContainer.style.overflow = originalOverflow;
+                
+                // Fallback
+                alert('Gagal mengunduh tabel. Silakan coba lagi.');
+            });
+        }
+        
+        // Download semua (grafik dan tabel)
+        function downloadAll() {
+            downloadChart();
+            setTimeout(() => {
+                downloadTable();
+                showFeedback(downloadAllBtn, '✓ Semua Terunduh');
+            }, 800);
+        }
+        
+        // Fungsi untuk menampilkan feedback visual
+        function showFeedback(button, message) {
+            const originalText = button.innerHTML;
+            const originalBackground = button.style.background;
+            
+            button.innerHTML = message;
+            button.style.background = '#28a745';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = originalBackground;
+                button.disabled = false;
+            }, 1500);
+        }
+        
+        // Event listeners
+        distanceSlider.addEventListener('input', () => {
+            updateSliderValues();
+            updateDataTable();
+            updateChart();
+        });
+        
+        simulateBtn.addEventListener('click', startSimulation);
+        randomBtn.addEventListener('click', generateRandomData);
+        downloadAllBtn.addEventListener('click', downloadAll);
+        downloadChartBtn.addEventListener('click', downloadChart);
+        downloadTableBtn.addEventListener('click', downloadTable);
+        
+        // Touch improvements
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+        
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSliderValues();
+            initializeData();
+            initializeChart();
+        });
+    </script>
+</body>
+  </html>
